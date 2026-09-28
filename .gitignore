@@ -1,0 +1,25 @@
+# Dependencies
+node_modules/
+
+# Markdown Documentation
+*.md
+*.MD
+
+# Environment
+.env
+.env.local
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Uploads (runtime)
+uploads/
