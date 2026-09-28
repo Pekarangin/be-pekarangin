@@ -3,13 +3,13 @@
 // ============================================================
 import app from './app.js';
 import env from './config/env.js';
-import db from './config/database.js';
+import prisma from './config/database.js';
 
 async function start() {
   try {
-    // Test database connection
-    const result = await db.query('SELECT NOW() AS server_time');
-    console.log(`✅ PostgreSQL connected — server time: ${result.rows[0].server_time}`);
+    // Test database connection via Prisma
+    await prisma.$connect();
+    console.log('✅ PostgreSQL connected via Prisma ORM');
 
     // Start HTTP server
     app.listen(env.port, () => {

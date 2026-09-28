@@ -12,6 +12,8 @@ COPY package*.json ./
 FROM base AS development
 ENV NODE_ENV=development
 RUN npm install
+COPY prisma ./prisma/
+RUN npx prisma generate
 COPY . .
 EXPOSE 3000
 CMD ["npm", "run", "dev"]
@@ -20,6 +22,8 @@ CMD ["npm", "run", "dev"]
 FROM base AS production
 ENV NODE_ENV=production
 RUN npm ci --only=production
+COPY prisma ./prisma/
+RUN npx prisma generate
 COPY . .
 EXPOSE 3000
 CMD ["npm", "start"]

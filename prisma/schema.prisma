@@ -1,0 +1,168 @@
+// ============================================================
+// prisma/schema.prisma — Pekarang.in Data Model (Prisma ORM)
+// Sumber: SSOT.md §5 (v1.1)
+// ============================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================
+// ENUMS
+// ============================================================
+
+enum PaparanSinar {
+  FULL_SUN
+  PARTIAL_SUN
+  SHADE
+
+  @@map("paparan_sinar")
+}
+
+enum SumberPaparan {
+  MANUAL
+  AI_VISION
+
+  @@map("sumber_paparan")
+}
+
+enum TingkatKesulitan {
+  MUDAH
+  SEDANG
+  SULIT
+
+  @@map("tingkat_kesulitan")
+}
+
+enum StatusTanaman {
+  AKTIF
+  PANEN
+  GAGAL
+
+  @@map("status_tanaman")
+}
+
+// ============================================================
+// MODELS
+// ============================================================
+
+model User {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  nama         String   @db.VarChar(100)
+  email        String   @unique @db.VarChar(255)
+  passwordHash String?  @map("password_hash") @db.VarChar(255)
+  googleId     String?  @unique @map("google_id") @db.VarChar(255)
+  avatarUrl    String?  @map("avatar_url")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  lahan        Lahan[]
+  tanamanAktif TanamanAktif[]
+
+  @@map("users")
+}
+
+model Lahan {
+  id            String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId        String        @map("user_id") @db.Uuid
+  namaLahan     String        @map("nama_lahan") @db.VarChar(100)
+  luasM2        Decimal       @map("luas_m2") @db.Decimal(5, 2)
+  gridSnapshot  Json          @map("grid_snapshot")
+  paparanSinar  PaparanSinar  @map("paparan_sinar")
+  sumberPaparan SumberPaparan @map("sumber_paparan")
+  fotoUrl       String?       @map("foto_url")
+  createdAt     DateTime      @default(now()) @map("created_at")
+
+  user         User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tanamanAktif TanamanAktif[]
+
+  @@index([userId])
+  @@map("lahan")
+}
+
+model Komoditas {
+  id                    String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  nama                  String           @unique @db.VarChar(50)
+  kebutuhanSinar        PaparanSinar     @map("kebutuhan_sinar")
+  luasMinM2             Decimal          @map("luas_min_m2") @db.Decimal(4, 2)
+  luasOptimalM2         Decimal          @map("luas_optimal_m2") @db.Decimal(4, 2)
+  waktuPanenHari        Int              @map("waktu_panen_hari")
+  konsumsiRtKgPerBulan  Decimal          @map("konsumsi_rt_kg_per_bulan") @db.Decimal(5, 2)
+  tingkatKesulitan      TingkatKesulitan @map("tingkat_kesulitan")
+  jadwalSiramHari       Int              @map("jadwal_siram_hari")
+  jadwalPupukHari       Int              @map("jadwal_pupuk_hari")
+  panduanSingkat        String?          @map("panduan_singkat")
+
+  hargaKomoditas HargaKomoditas[]
+  tanamanAktif   TanamanAktif[]
+
+  @@map("komoditas")
+}
+
+model HargaKomoditas {
+  id             String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  komoditasId    String    @map("komoditas_id") @db.Uuid
+  hargaRpPerKg   Int       @map("harga_rp_per_kg")
+  sumber         String    @db.VarChar(50)
+  tanggalUpdate  DateTime  @map("tanggal_update") @db.Date
+  wilayah        String    @db.VarChar(100)
+
+  komoditas      Komoditas @relation(fields: [komoditasId], references: [id], onDelete: Cascade)
+
+  @@index([komoditasId])
+  @@index([tanggalUpdate(sort: Desc)])
+  @@map("harga_komoditas")
+}
+
+model TanamanAktif {
+  id             String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId         String        @map("user_id") @db.Uuid
+  lahanId        String        @map("lahan_id") @db.Uuid
+  komoditasId    String        @map("komoditas_id") @db.Uuid
+  tanggalTanam   DateTime      @map("tanggal_tanam") @db.Date
+  perkiraanPanen DateTime      @map("perkiraan_panen") @db.Date
+  status         StatusTanaman @default(AKTIF)
+
+  user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lahan          Lahan         @relation(fields: [lahanId], references: [id], onDelete: Cascade)
+  komoditas      Komoditas     @relation(fields: [komoditasId], references: [id])
+  catatanHarian  CatatanHarian[]
+  realisasiPanen RealisasiPanen?
+
+  @@index([userId])
+  @@index([lahanId])
+  @@index([status])
+  @@map("tanaman_aktif")
+}
+
+model CatatanHarian {
+  id           String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tanamanId    String       @map("tanaman_id") @db.Uuid
+  tanggal      DateTime     @db.Date
+  siramDone    Boolean      @default(false) @map("siram_done")
+  pupukDone    Boolean      @default(false) @map("pupuk_done")
+  catatanBebas String?      @map("catatan_bebas")
+
+  tanamanAktif TanamanAktif @relation(fields: [tanamanId], references: [id], onDelete: Cascade)
+
+  @@unique([tanamanId, tanggal])
+  @@index([tanamanId])
+  @@map("catatan_harian")
+}
+
+model RealisasiPanen {
+  id              String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tanamanId       String       @unique @map("tanaman_id") @db.Uuid
+  tanggalPanen    DateTime     @map("tanggal_panen") @db.Date
+  beratPanenGram  Int          @map("berat_panen_gram")
+  estimasiHematRp Int          @map("estimasi_hemat_rp")
+
+  tanamanAktif    TanamanAktif @relation(fields: [tanamanId], references: [id], onDelete: Cascade)
+
+  @@index([tanamanId])
+  @@map("realisasi_panen")
+}
