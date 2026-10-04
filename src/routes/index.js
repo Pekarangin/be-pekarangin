@@ -15,14 +15,14 @@ router.get('/health', (_req, res) => {
 import authRoutes from './auth.routes.js';
 router.use('/auth', authRoutes);
 
-// import lahanRoutes from './lahan.routes.js';
-// router.use('/lahan', lahanRoutes);
+import lahanRoutes from './lahan.routes.js';
+router.use('/lahan', lahanRoutes);
 
-// import komoditasRoutes from './komoditas.routes.js';
-// router.use('/komoditas', komoditasRoutes);
+import komoditasRoutes from './komoditas.routes.js';
+router.use('/komoditas', komoditasRoutes);
 
-// import trackingRoutes from './tracking.routes.js';
-// router.use('/tanaman-aktif', trackingRoutes);
+import trackingRoutes from './tracking.routes.js';
+router.use('/tanaman-aktif', trackingRoutes);
 
 // import aiInsightRoutes from './aiInsight.routes.js';
 // router.use('/ai-insight', aiInsightRoutes);

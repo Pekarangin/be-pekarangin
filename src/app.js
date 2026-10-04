@@ -12,7 +12,11 @@ import env from './config/env.js';
 const app = express();
 
 // ---- Global middleware ----
-app.use(helmet());                          // Security headers
+app.use(
+  helmet({
+    contentSecurityPolicy: false, // Diperlukan agar UI interactive Scalar dapat dimuat tanpa terblokir CSP
+  })
+);
 app.use(cors());                            // CORS — semua origin (development)
 app.use(express.json({ limit: '10mb' }));   // Parse JSON body
 app.use(express.urlencoded({ extended: true }));
@@ -21,6 +25,32 @@ app.use(express.urlencoded({ extended: true }));
 if (env.isDev) {
   app.use(morgan('dev'));
 }
+
+// ---- OpenAPI & Scalar API Documentation ----
+import { apiReference } from '@scalar/express-api-reference';
+import { openApiSpec } from './config/openapi.js';
+
+// Raw OpenAPI JSON spec
+app.get('/openapi.json', (_req, res) => res.json(openApiSpec));
+app.get('/api/v1/openapi.json', (_req, res) => res.json(openApiSpec));
+
+// Scalar Interactive Documentation UI
+app.use(
+  '/docs',
+  apiReference({
+    spec: {
+      content: openApiSpec,
+    },
+    theme: 'purple',
+    metaData: {
+      title: 'Pekarang.in API Documentation',
+      description: 'Dokumentasi interaktif REST API Pekarang.in menggunakan Scalar',
+    },
+  })
+);
+
+// Redirect root ke /docs untuk kemudahan navigasi
+app.get('/', (_req, res) => res.redirect('/docs'));
 
 // ---- API routes ----
 app.use('/api/v1', routes);

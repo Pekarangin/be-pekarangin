@@ -14,6 +14,12 @@ export class AppError extends Error {
   }
 }
 
+export class BadRequestError extends AppError {
+  constructor(message = 'Permintaan tidak valid') {
+    super(message, 400, 'BAD_REQUEST');
+  }
+}
+
 export class ValidationError extends AppError {
   constructor(message = 'Input tidak valid') {
     super(message, 400, 'VALIDATION_ERROR');

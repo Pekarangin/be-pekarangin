@@ -13,11 +13,15 @@
     "db:seed": "node prisma/seed.js",
     "db:reset": "prisma db push --force-reset && node prisma/seed.js",
     "test:auth": "node tests/test_auth.js",
-    "test": "node tests/test_auth.js"
+    "test:lahan": "node tests/test_lahan.js",
+    "test:rekomendasi": "node tests/test_rekomendasi.js",
+    "test:tracking": "node tests/test_tracking.js",
+    "test": "node tests/test_auth.js && node tests/test_lahan.js && node tests/test_rekomendasi.js && node tests/test_tracking.js"
   },
   "dependencies": {
     "@google/generative-ai": "^0.21.0",
     "@prisma/client": "^6.4.1",
+    "@scalar/express-api-reference": "^0.10.26",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
