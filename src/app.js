@@ -11,6 +11,9 @@ import env from './config/env.js';
 
 const app = express();
 
+// Trust reverse proxy (Railway, Render, Cloudflare) untuk deteksi HTTPS dan host riil
+app.set('trust proxy', 1);
+
 // ---- Global middleware ----
 app.use(
   helmet({
@@ -30,24 +33,45 @@ if (env.isDev) {
 import { apiReference } from '@scalar/express-api-reference';
 import { openApiSpec } from './config/openapi.js';
 
+// Helper untuk menghasilkan OpenAPI spec dinamis sesuai request origin
+function getDynamicSpec(req) {
+  const protocol = req.headers['x-forwarded-proto'] || req.protocol || 'http';
+  const host = req.get('host') || 'localhost:3000';
+  const currentOriginUrl = `${protocol}://${host}/api/v1`;
+
+  const existingServers = (openApiSpec.servers || []).filter(
+    (s) => s.url !== currentOriginUrl
+  );
+
+  return {
+    ...openApiSpec,
+    servers: [
+      {
+        url: currentOriginUrl,
+        description: `Current Server (${protocol}://${host})`,
+      },
+      ...existingServers,
+    ],
+  };
+}
+
 // Raw OpenAPI JSON spec
-app.get('/openapi.json', (_req, res) => res.json(openApiSpec));
-app.get('/api/v1/openapi.json', (_req, res) => res.json(openApiSpec));
+app.get('/openapi.json', (req, res) => res.json(getDynamicSpec(req)));
+app.get('/api/v1/openapi.json', (_req, res) => res.redirect('/openapi.json'));
 
 // Scalar Interactive Documentation UI
-app.use(
-  '/docs',
-  apiReference({
+app.use('/docs', (req, res, next) => {
+  return apiReference({
     spec: {
-      content: openApiSpec,
+      content: getDynamicSpec(req),
     },
     theme: 'purple',
     metaData: {
       title: 'Pekarang.in API Documentation',
       description: 'Dokumentasi interaktif REST API Pekarang.in menggunakan Scalar',
     },
-  })
-);
+  })(req, res, next);
+});
 
 // Redirect root ke /docs untuk kemudahan navigasi
 app.get('/', (_req, res) => res.redirect('/docs'));

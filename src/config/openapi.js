@@ -24,6 +24,14 @@ export const openApiSpec = {
   },
   servers: [
     {
+      url: '/api/v1',
+      description: 'Current Environment (Relative / Auto)',
+    },
+    {
+      url: 'https://be-pekarangin-production.up.railway.app/api/v1',
+      description: 'Production Server (Railway)',
+    },
+    {
       url: 'http://localhost:3000/api/v1',
       description: 'Development Server (Local/Docker)',
     },
