@@ -16,7 +16,8 @@
     "test:lahan": "node tests/test_lahan.js",
     "test:rekomendasi": "node tests/test_rekomendasi.js",
     "test:tracking": "node tests/test_tracking.js",
-    "test": "node tests/test_auth.js && node tests/test_lahan.js && node tests/test_rekomendasi.js && node tests/test_tracking.js"
+    "test:ai": "node tests/test_ai_insight.js",
+    "test": "node tests/test_auth.js && node tests/test_lahan.js && node tests/test_rekomendasi.js && node tests/test_tracking.js && node tests/test_ai_insight.js"
   },
   "dependencies": {
     "@google/generative-ai": "^0.21.0",

@@ -24,7 +24,7 @@ router.use('/komoditas', komoditasRoutes);
 import trackingRoutes from './tracking.routes.js';
 router.use('/tanaman-aktif', trackingRoutes);
 
-// import aiInsightRoutes from './aiInsight.routes.js';
-// router.use('/ai-insight', aiInsightRoutes);
+import aiInsightRoutes from './aiInsight.routes.js';
+router.use('/ai-insight', aiInsightRoutes);
 
 export default router;

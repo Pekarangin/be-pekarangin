@@ -26,6 +26,7 @@ const env = {
 
   // External APIs
   geminiApiKey: process.env.GEMINI_API_KEY || '',
+  aiServiceUrl: process.env.AI_SERVICE_URL || 'https://ai-pekarangin-production.up.railway.app',
 
   // Flags
   isDev: (process.env.NODE_ENV || 'development') === 'development',
