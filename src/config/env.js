@@ -26,6 +26,10 @@ const env = {
 
   // External APIs
   geminiApiKey: process.env.GEMINI_API_KEY || '',
+  geminiModel:
+    !process.env.GEMINI_MODEL || process.env.GEMINI_MODEL === 'gemini-1.5-flash'
+      ? 'gemini-2.5-flash'
+      : process.env.GEMINI_MODEL,
   aiServiceUrl: process.env.AI_SERVICE_URL || 'https://ai-pekarangin-production.up.railway.app',
 
   // Flags
