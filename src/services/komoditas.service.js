@@ -3,6 +3,7 @@
 // ============================================================
 import prisma from '../config/database.js';
 import { NotFoundError } from '../utils/errors.js';
+import { getDefaultKomoditasImage } from '../utils/constants.js';
 
 /**
  * Mengambil daftar seluruh master komoditas
@@ -24,6 +25,7 @@ export async function getAllKomoditas() {
     jadwal_siram_hari: k.jadwalSiramHari,
     jadwal_pupuk_hari: k.jadwalPupukHari,
     panduan_singkat: k.panduanSingkat,
+    image_url: k.imageUrl || getDefaultKomoditasImage(k.nama),
   }));
 }
 
@@ -59,6 +61,7 @@ export async function getKomoditasById(id) {
     jadwal_siram_hari: k.jadwalSiramHari,
     jadwal_pupuk_hari: k.jadwalPupukHari,
     panduan_singkat: k.panduanSingkat,
+    image_url: k.imageUrl || getDefaultKomoditasImage(k.nama),
     harga_terkini: latestHarga
       ? {
           harga_rp_per_kg: latestHarga.hargaRpPerKg,

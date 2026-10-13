@@ -27,7 +27,7 @@ function generateToken(payload) {
 /**
  * Registrasi user baru via email & password
  */
-export async function register({ nama, email, password }) {
+export async function register({ nama, email, password, wilayah }) {
   const normalizedEmail = email.toLowerCase().trim();
 
   // 1. Cek apakah email sudah terdaftar
@@ -50,11 +50,14 @@ export async function register({ nama, email, password }) {
       nama: nama.trim(),
       email: normalizedEmail,
       passwordHash,
+      wilayah: wilayah ? wilayah.trim() : null,
     },
     select: {
       id: true,
       nama: true,
       email: true,
+      wilayah: true,
+      avatarUrl: true,
       createdAt: true,
     },
   });
@@ -69,6 +72,8 @@ export async function register({ nama, email, password }) {
     user_id: user.id,
     nama: user.nama,
     email: user.email,
+    wilayah: user.wilayah || null,
+    avatar_url: user.avatarUrl || null,
     token,
   };
 }
@@ -109,6 +114,8 @@ export async function login({ email, password }) {
     user_id: user.id,
     nama: user.nama,
     email: user.email,
+    wilayah: user.wilayah || null,
+    avatar_url: user.avatarUrl || null,
     token,
   };
 }
@@ -184,6 +191,7 @@ export async function loginWithGoogle(idToken) {
     user_id: user.id,
     nama: user.nama,
     email: user.email,
+    wilayah: user.wilayah || null,
     avatar_url: user.avatarUrl,
     is_new_user: isNewUser,
     token,
@@ -200,6 +208,7 @@ export async function getMe(userId) {
       id: true,
       nama: true,
       email: true,
+      wilayah: true,
       avatarUrl: true,
       createdAt: true,
     },
@@ -213,6 +222,7 @@ export async function getMe(userId) {
     user_id: user.id,
     nama: user.nama,
     email: user.email,
+    wilayah: user.wilayah || null,
     avatar_url: user.avatarUrl,
     created_at: user.createdAt,
   };

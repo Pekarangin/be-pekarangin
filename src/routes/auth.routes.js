@@ -30,6 +30,11 @@ router.post(
       .withMessage('Password wajib diisi')
       .isLength({ min: 8 })
       .withMessage('Password minimal 8 karakter'),
+    body('wilayah')
+      .optional({ nullable: true })
+      .trim()
+      .isLength({ max: 150 })
+      .withMessage('Wilayah maksimal 150 karakter'),
     validate,
   ],
   authController.register

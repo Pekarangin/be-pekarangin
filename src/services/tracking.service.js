@@ -5,6 +5,7 @@
 // ============================================================
 import prisma from '../config/database.js';
 import { NotFoundError, ForbiddenError, BadRequestError } from '../utils/errors.js';
+import { getDefaultKomoditasImage } from '../utils/constants.js';
 
 /**
  * Format Date object to YYYY-MM-DD string
@@ -132,7 +133,7 @@ export async function getTanamanList({ userId, status, lahanId }) {
         select: { namaLahan: true },
       },
       komoditas: {
-        select: { nama: true },
+        select: { nama: true, imageUrl: true },
       },
       catatanHarian: {
         orderBy: { tanggal: 'desc' },
@@ -145,8 +146,11 @@ export async function getTanamanList({ userId, status, lahanId }) {
 
   return list.map(item => ({
     tanaman_aktif_id: item.id,
+    lahan_id: item.lahanId,
     lahan_nama: item.lahan.namaLahan,
+    komoditas_id: item.komoditasId,
     komoditas_nama: item.komoditas.nama,
+    image_url: item.komoditas.imageUrl || getDefaultKomoditasImage(item.komoditas.nama),
     tanggal_tanam: formatDate(item.tanggalTanam),
     perkiraan_panen: formatDate(item.perkiraanPanen),
     status: item.status,

@@ -35,6 +35,7 @@ async function run() {
       nama: 'Budi Santoso',
       email: testEmail,
       password: testPassword,
+      wilayah: 'Condongcatur, Depok, Sleman',
     }),
   });
   const data1 = await res1.json();
@@ -42,6 +43,7 @@ async function run() {
   assert(data1.success === true, 'Response success is true');
   assert(data1.data?.user_id, 'Returns user_id UUID');
   assert(data1.data?.email === testEmail, 'Email matches registered email');
+  assert(data1.data?.wilayah === 'Condongcatur, Depok, Sleman', 'Wilayah matches registered wilayah');
   assert(data1.data?.token, 'Returns JWT token');
   authToken = data1.data?.token;
   userId = data1.data?.user_id;

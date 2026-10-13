@@ -58,6 +58,7 @@ model User {
   passwordHash String?  @map("password_hash") @db.VarChar(255)
   googleId     String?  @unique @map("google_id") @db.VarChar(255)
   avatarUrl    String?  @map("avatar_url")
+  wilayah      String?  @db.VarChar(150)
   createdAt    DateTime @default(now()) @map("created_at")
 
   lahan        Lahan[]
@@ -96,6 +97,7 @@ model Komoditas {
   jadwalSiramHari       Int              @map("jadwal_siram_hari")
   jadwalPupukHari       Int              @map("jadwal_pupuk_hari")
   panduanSingkat        String?          @map("panduan_singkat")
+  imageUrl              String?          @map("image_url")
 
   hargaKomoditas HargaKomoditas[]
   tanamanAktif   TanamanAktif[]

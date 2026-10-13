@@ -6,8 +6,8 @@ import { sendSuccess } from '../utils/response.js';
 
 export async function register(req, res, next) {
   try {
-    const { nama, email, password } = req.body;
-    const data = await authService.register({ nama, email, password });
+    const { nama, email, password, wilayah } = req.body;
+    const data = await authService.register({ nama, email, password, wilayah });
     return sendSuccess(res, data, 'Registrasi berhasil', 201);
   } catch (err) {
     next(err);

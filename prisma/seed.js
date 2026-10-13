@@ -3,6 +3,7 @@
 // Seeds 15 master komoditas and initial prices
 // ============================================================
 import { PrismaClient } from '@prisma/client';
+import { getDefaultKomoditasImage } from '../src/utils/constants.js';
 
 const prisma = new PrismaClient();
 
@@ -46,10 +47,14 @@ async function main() {
   console.log('🌱 Starting Prisma seeding...\n');
 
   for (const item of komoditasData) {
+    const dataWithImg = {
+      ...item,
+      imageUrl: getDefaultKomoditasImage(item.nama),
+    };
     const komoditas = await prisma.komoditas.upsert({
       where: { nama: item.nama },
-      update: item,
-      create: item,
+      update: dataWithImg,
+      create: dataWithImg,
     });
 
     const harga = hargaPlaceholder[item.nama] || 15000;

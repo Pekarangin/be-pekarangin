@@ -239,6 +239,11 @@ async function run() {
   assert(typeof firstItem.luas_dibutuhkan_m2 === 'number', 'luas_dibutuhkan_m2 is number');
   assert(firstItem.tingkat_kesulitan, 'tingkat_kesulitan is present');
   assert(firstItem.harga_pasar_per_kg > 0, 'harga_pasar_per_kg > 0');
+  assert(typeof firstItem.image_url === 'string' && firstItem.image_url.length > 0, 'image_url is present');
+  assert(typeof firstItem.panduan_singkat === 'string', 'panduan_singkat is present');
+  assert(typeof firstItem.jadwal_siram_hari === 'number', 'jadwal_siram_hari is number');
+  assert(typeof firstItem.jadwal_pupuk_hari === 'number', 'jadwal_pupuk_hari is number');
+  assert(typeof firstItem.media_tanam === 'string', 'media_tanam is present');
 
   // 5. Ownership check: User 2 meminta rekomendasi untuk Lahan User 1 (403 FORBIDDEN)
   const resForbidden = await fetch(

@@ -6,6 +6,8 @@ import prisma from '../config/database.js';
 import {
   SUNLIGHT_MATRIX,
   KESESUAIAN_SINAR,
+  getDefaultKomoditasImage,
+  getDefaultMediaTanam,
 } from '../utils/constants.js';
 import { NotFoundError, ForbiddenError } from '../utils/errors.js';
 
@@ -141,6 +143,11 @@ export async function getRecommendationsForLahan(userId, lahanId) {
       kesesuaian_sinar: kesesuaianSinar,
       harga_pasar_per_kg: hargaPasarPerKg,
       konsumsi_rt_kg_per_bulan: konsumsiRt,
+      image_url: k.imageUrl || getDefaultKomoditasImage(k.nama),
+      panduan_singkat: k.panduanSingkat,
+      jadwal_siram_hari: k.jadwalSiramHari,
+      jadwal_pupuk_hari: k.jadwalPupukHari,
+      media_tanam: getDefaultMediaTanam(luasMin),
     };
   });
 
