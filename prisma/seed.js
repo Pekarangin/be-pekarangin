@@ -25,22 +25,22 @@ const komoditasData = [
   { nama: 'Daun bawang', kebutuhanSinar: 'PARTIAL_SUN', luasMinM2: 0.25, luasOptimalM2: 0.50, waktuPanenHari: 45, konsumsiRtKgPerBulan: 0.40, tingkatKesulitan: 'MUDAH', jadwalSiramHari: 2, jadwalPupukHari: 14, panduanSingkat: 'Tanam dari potongan akar bawang dapur. Tumbuh ulang setelah dipotong.' },
 ];
 
-const hargaPlaceholder = {
-  'Cabai rawit': 85000,
-  'Cabai merah': 65000,
-  'Bawang merah': 40000,
-  'Tomat': 14000,
-  'Bayam': 12000,
-  'Kangkung': 10000,
-  'Selada': 25000,
-  'Sawi': 12000,
-  'Wortel': 18000,
-  'Terong': 15000,
-  'Kacang panjang': 14000,
-  'Mentimun': 10000,
-  'Pare': 12000,
-  'Kemangi': 30000,
-  'Daun bawang': 20000,
+const hargaSleman = {
+  'Cabai rawit': 68857,
+  'Cabai merah': 67571,
+  'Bawang merah': 30714,
+  'Bayam': 10000,
+  'Wortel': 14286,
+  'Selada': 22000,
+  'Kangkung': 6500,
+  'Mentimun': 10857,
+  'Tomat': 8286,
+  'Kemangi': 25000,
+  'Terong': 12000,
+  'Daun bawang': 18000,
+  'Sawi': 7071,
+  'Kacang panjang': 8500,
+  'Pare': 11000,
 };
 
 async function main() {
@@ -57,15 +57,15 @@ async function main() {
       create: dataWithImg,
     });
 
-    const harga = hargaPlaceholder[item.nama] || 15000;
+    const harga = hargaSleman[item.nama] || 15000;
 
     await prisma.hargaKomoditas.create({
       data: {
         komoditasId: komoditas.id,
         hargaRpPerKg: harga,
-        sumber: 'BAPANAS',
-        tanggalUpdate: new Date('2026-09-28'),
-        wilayah: 'Yogyakarta',
+        sumber: 'SLEMAN_DISPERINDAG',
+        tanggalUpdate: new Date('2026-10-13'),
+        wilayah: 'Sleman',
       },
     });
   }

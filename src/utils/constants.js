@@ -34,6 +34,7 @@ export const STATUS_TANAMAN = {
 export const SUMBER_HARGA = {
   BAPANAS: 'BAPANAS',
   PIHPS_BI: 'PIHPS_BI',
+  SLEMAN_DISPERINDAG: 'SLEMAN_DISPERINDAG',
 };
 
 /** Label kesesuaian cahaya (output rekomendasi) */

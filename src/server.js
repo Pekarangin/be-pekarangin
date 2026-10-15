@@ -32,6 +32,61 @@ async function start() {
       });
     }
 
+    // Auto-sync Sleman commodity prices dated 2026-10-13 (SIHARPA Disperindag)
+    const slemanPrices = {
+      'Cabai rawit': 68857,
+      'Cabai merah': 67571,
+      'Bawang merah': 30714,
+      'Bayam': 10000,
+      'Wortel': 14286,
+      'Selada': 22000,
+      'Kangkung': 6500,
+      'Mentimun': 10857,
+      'Tomat': 8286,
+      'Kemangi': 25000,
+      'Terong': 12000,
+      'Daun bawang': 18000,
+      'Sawi': 7071,
+      'Kacang panjang': 8500,
+      'Pare': 11000,
+    };
+    const existingSlemanPrices = await prisma.hargaKomoditas.count({
+      where: {
+        sumber: 'SLEMAN_DISPERINDAG',
+        tanggalUpdate: new Date('2026-10-13'),
+      },
+    });
+    if (existingSlemanPrices < Object.keys(slemanPrices).length) {
+      console.log('🔄 Syncing latest Sleman Disperindag commodity prices...');
+      const allCrops = await prisma.komoditas.findMany({
+        select: { id: true, nama: true },
+      });
+      for (const crop of allCrops) {
+        const harga = slemanPrices[crop.nama];
+        if (harga) {
+          const alreadyInserted = await prisma.hargaKomoditas.findFirst({
+            where: {
+              komoditasId: crop.id,
+              sumber: 'SLEMAN_DISPERINDAG',
+              tanggalUpdate: new Date('2026-10-13'),
+            },
+          });
+          if (!alreadyInserted) {
+            await prisma.hargaKomoditas.create({
+              data: {
+                komoditasId: crop.id,
+                hargaRpPerKg: harga,
+                sumber: 'SLEMAN_DISPERINDAG',
+                tanggalUpdate: new Date('2026-10-13'),
+                wilayah: 'Sleman',
+              },
+            });
+          }
+        }
+      }
+      console.log('✅ Sleman Disperindag commodity prices synced.');
+    }
+
     // Start HTTP server
     app.listen(env.port, () => {
       console.log(`🚀 Pekarang.in Backend running on port ${env.port}`);
