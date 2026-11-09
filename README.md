@@ -339,4 +339,4 @@ npm run test:ai            # 21 tests — Chatbot Pertanian, Konteks Tanaman, Sa
 ---
 
 ## 📄 Lisensi
-Hak Cipta © 2026 Tim Pekarang.in — Dikembangkan untuk kompetisi MAGE 12 ITS. Seluruh hak cipta dilindungi undang-undang.
+© 2026 Tim Pekarang.in — Dikembangkan untuk kompetisi MAGE 12 ITS.
