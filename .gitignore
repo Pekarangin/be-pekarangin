@@ -4,6 +4,7 @@ node_modules/
 # Markdown Documentation
 *.md
 *.MD
+!README.md
 
 # Environment
 .env
