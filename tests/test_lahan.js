@@ -96,6 +96,48 @@ async function run() {
   assert(res2.status === 400, `Status code is 400 (got ${res2.status})`);
   assert(data2.error?.code === 'VALIDATION_ERROR', 'Error code is VALIDATION_ERROR');
 
+  // 2b. POST /lahan — Sukses Input Manual dengan grid_snapshot kosong []
+  console.log('\n2b. Testing POST /lahan (Sukses Input Manual grid_snapshot: [])');
+  const res2b = await fetch(`${BASE_URL}/lahan`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token1}`,
+    },
+    body: JSON.stringify({
+      nama_lahan: 'Lahan Manual Kosong',
+      grid_snapshot: [],
+      luas_m2: 5.0,
+      paparan_sinar: 'FULL_SUN',
+      sumber_paparan: 'MANUAL',
+    }),
+  });
+  const data2b = await res2b.json();
+  assert(res2b.status === 201, `Status code is 201 (got ${res2b.status})`);
+  assert(data2b.data?.luas_m2 === 5.0, 'luas_m2 is 5.0');
+  assert(Array.isArray(data2b.data?.grid_snapshot), 'grid_snapshot is array');
+
+  // 2c. POST /lahan — Sukses Input Manual dengan metode_input: 'manual'
+  console.log('\n2c. Testing POST /lahan (Sukses Input Manual metode_input: manual)');
+  const res2c = await fetch(`${BASE_URL}/lahan`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token1}`,
+    },
+    body: JSON.stringify({
+      nama_lahan: 'Lahan Kebun Raya',
+      grid_snapshot: [1, 2],
+      luas_m2: 12.5,
+      paparan_sinar: 'PARTIAL_SUN',
+      sumber_paparan: 'MANUAL',
+      metode_input: 'manual',
+    }),
+  });
+  const data2c = await res2c.json();
+  assert(res2c.status === 201, `Status code is 201 (got ${res2c.status})`);
+  assert(data2c.data?.luas_m2 === 12.5, 'luas_m2 is 12.5');
+
   // 3. POST /lahan — Validation Error: Indeks sel di luar 0–63
   console.log('\n3. Testing POST /lahan (Indeks sel di luar batas 0–63 → 400)');
   const res3 = await fetch(`${BASE_URL}/lahan`, {

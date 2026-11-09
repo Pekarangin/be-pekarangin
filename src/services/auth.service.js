@@ -227,3 +227,49 @@ export async function getMe(userId) {
     created_at: user.createdAt,
   };
 }
+
+/**
+ * Update data profil user saat ini
+ */
+export async function updateMe(userId, updateData) {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+  });
+
+  if (!user) {
+    throw new NotFoundError('User tidak ditemukan');
+  }
+
+  const dataToUpdate = {};
+  if (updateData.nama !== undefined) {
+    dataToUpdate.nama = updateData.nama.trim();
+  }
+  if (updateData.wilayah !== undefined) {
+    dataToUpdate.wilayah = updateData.wilayah ? updateData.wilayah.trim() : null;
+  }
+  if (updateData.avatar_url !== undefined) {
+    dataToUpdate.avatarUrl = updateData.avatar_url ? updateData.avatar_url.trim() : null;
+  }
+
+  const updated = await prisma.user.update({
+    where: { id: userId },
+    data: dataToUpdate,
+    select: {
+      id: true,
+      nama: true,
+      email: true,
+      wilayah: true,
+      avatarUrl: true,
+      createdAt: true,
+    },
+  });
+
+  return {
+    user_id: updated.id,
+    nama: updated.nama,
+    email: updated.email,
+    wilayah: updated.wilayah || null,
+    avatar_url: updated.avatarUrl,
+    created_at: updated.createdAt,
+  };
+}

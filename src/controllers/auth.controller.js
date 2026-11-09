@@ -43,3 +43,13 @@ export async function getMe(req, res, next) {
     next(err);
   }
 }
+
+export async function updateMe(req, res, next) {
+  try {
+    const { nama, wilayah, avatar_url } = req.body;
+    const data = await authService.updateMe(req.user.userId, { nama, wilayah, avatar_url });
+    return sendSuccess(res, data, 'Profil berhasil diperbarui', 200);
+  } catch (err) {
+    next(err);
+  }
+}

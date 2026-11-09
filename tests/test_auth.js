@@ -157,6 +157,35 @@ async function run() {
   assert(res10.status === 401, `Status code is 401 (got ${res10.status})`);
   assert(data10.error?.code === 'UNAUTHORIZED', 'Error code is UNAUTHORIZED');
 
+  // 11. PUT /auth/me — Sukses Update Profil
+  console.log('\n11. Testing PUT /auth/me (Sukses Update Nama & Wilayah)');
+  const res11 = await fetch(`${BASE_URL}/auth/me`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${authToken}`,
+    },
+    body: JSON.stringify({
+      nama: 'Budi Santoso Updated',
+      wilayah: 'Kabupaten Sleman, DIY',
+    }),
+  });
+  const data11 = await res11.json();
+  assert(res11.status === 200, `Status code is 200 (got ${res11.status})`);
+  assert(data11.data?.nama === 'Budi Santoso Updated', 'Updated name matches');
+  assert(data11.data?.wilayah === 'Kabupaten Sleman, DIY', 'Updated wilayah matches');
+
+  // 12. PUT /auth/me — Tanpa Token (401 UNAUTHORIZED)
+  console.log('\n12. Testing PUT /auth/me (Tanpa Token → 401 UNAUTHORIZED)');
+  const res12 = await fetch(`${BASE_URL}/auth/me`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ nama: 'Hacker' }),
+  });
+  const data12 = await res12.json();
+  assert(res12.status === 401, `Status code is 401 (got ${res12.status})`);
+  assert(data12.error?.code === 'UNAUTHORIZED', 'Error code is UNAUTHORIZED');
+
   console.log('\n----------------------------------------');
   console.log(`Summary: ${passed} passed, ${failed} failed`);
   console.log('----------------------------------------');

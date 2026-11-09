@@ -69,4 +69,31 @@ router.post(
 // GET /api/v1/auth/me
 router.get('/me', authenticate, authController.getMe);
 
+// PUT /api/v1/auth/me — Update profil user saat ini
+router.put(
+  '/me',
+  authenticate,
+  [
+    body('nama')
+      .optional()
+      .trim()
+      .notEmpty()
+      .withMessage('Nama tidak boleh kosong jika disertakan')
+      .isLength({ max: 100 })
+      .withMessage('Nama maksimal 100 karakter'),
+    body('wilayah')
+      .optional({ nullable: true })
+      .trim()
+      .isLength({ max: 150 })
+      .withMessage('Wilayah maksimal 150 karakter'),
+    body('avatar_url')
+      .optional({ nullable: true })
+      .trim()
+      .isString()
+      .withMessage('avatar_url harus berupa string URL'),
+    validate,
+  ],
+  authController.updateMe
+);
+
 export default router;

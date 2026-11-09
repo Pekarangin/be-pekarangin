@@ -41,13 +41,14 @@ router.post(
       .isLength({ max: 100 })
       .withMessage('nama_lahan maksimal 100 karakter'),
     body('grid_snapshot')
-      .isArray({ min: 1 })
-      .withMessage('grid_snapshot wajib berupa array dan minimal memilih 1 sel'),
+      .optional({ nullable: true })
+      .isArray()
+      .withMessage('grid_snapshot harus berupa array jika disertakan'),
     body('luas_m2')
       .notEmpty()
       .withMessage('luas_m2 wajib diisi')
-      .isFloat({ min: 0.25 })
-      .withMessage('luas_m2 minimal 0.25 m2'),
+      .isFloat({ min: 0.25, max: 1000 })
+      .withMessage('luas_m2 harus bernilai antara 0.25 dan 1000 m2'),
     body('paparan_sinar')
       .notEmpty()
       .withMessage('paparan_sinar wajib diisi')
@@ -58,6 +59,10 @@ router.post(
       .withMessage('sumber_paparan wajib diisi')
       .isIn(['MANUAL', 'AI_VISION'])
       .withMessage('sumber_paparan harus salah satu dari: MANUAL, AI_VISION'),
+    body('metode_input')
+      .optional()
+      .isIn(['grid', 'manual'])
+      .withMessage('metode_input harus berupa grid atau manual'),
     body('foto_url')
       .optional({ nullable: true })
       .isString()

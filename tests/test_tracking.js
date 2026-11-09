@@ -302,6 +302,19 @@ async function run() {
   });
   assert(resChecklistAfterPanen.status === 400, `Status code is 400 (got ${resChecklistAfterPanen.status})`);
 
+  // 13b. GET /tanaman-aktif — Pastikan data realisasi_panen ikut dikembalikan
+  console.log('\n13b. Testing GET /tanaman-aktif (Memverifikasi relasi realisasi_panen)');
+  const resListPanen = await request(`/tanaman-aktif`, {
+    headers: authA,
+  });
+  assert(resListPanen.status === 200, `Status code is 200 (got ${resListPanen.status})`);
+  const panenItem = resListPanen.data?.data?.find(item => item.tanaman_aktif_id === tanamanId);
+  assert(panenItem !== undefined, 'Item tanaman panen ditemukan');
+  assert(panenItem.realisasi_panen !== null, 'realisasi_panen object is not null');
+  assert(panenItem.realisasi_panen?.berat_panen_gram === 500, 'realisasi_panen.berat_panen_gram is 500');
+  assert(panenItem.realisasi_panen?.berat_panen_kg === 0.5, 'realisasi_panen.berat_panen_kg is 0.5');
+  assert(panenItem.realisasi_panen?.estimasi_hemat_rp > 0, 'realisasi_panen.estimasi_hemat_rp > 0');
+
   // 14. PATCH /tanaman-aktif/:id/status (Tutup siklus sebagai GAGAL)
   console.log('\n14. Testing PATCH /tanaman-aktif/:id/status (Tutup sebagai GAGAL)');
   const resGagal = await request(`/tanaman-aktif/${tanamanGagalId}/status`, {

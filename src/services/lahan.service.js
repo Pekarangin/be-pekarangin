@@ -44,28 +44,39 @@ export async function createLahan(userId, data) {
     paparan_sinar,
     sumber_paparan,
     foto_url,
+    metode_input,
   } = data;
 
-  // 1. Validasi grid snapshot
-  validateGridSnapshot(grid_snapshot);
-
-  // 2. Validasi luas_m2 sesuai formula: length * 0.25
-  const expectedLuas = grid_snapshot.length * GRID.CELL_SIZE_M2;
+  // 1. Validasi luas_m2
   const actualLuas = Number(luas_m2);
-
-  if (Math.abs(actualLuas - expectedLuas) > 0.001) {
-    throw new ValidationError(
-      `luas_m2 (${actualLuas}) tidak sesuai dengan jumlah sel terpilih (${grid_snapshot.length} sel × ${GRID.CELL_SIZE_M2} = ${expectedLuas} m2)`
-    );
+  if (isNaN(actualLuas) || actualLuas < 0.25 || actualLuas > 1000) {
+    throw new ValidationError('luas_m2 harus bernilai antara 0.25 dan 1000 m2');
   }
 
-  // 3. Simpan lahan baru ke database
+  // 2. Validasi grid_snapshot jika ada sel yang dikirim
+  let finalGridSnapshot = Array.isArray(grid_snapshot) ? grid_snapshot : [];
+  if (finalGridSnapshot.length > 0) {
+    validateGridSnapshot(finalGridSnapshot);
+  }
+
+  // 3. Validasi kesesuaian luas vs grid hanya jika mode grid aktif (bukan manual)
+  const isManualMode = metode_input === 'manual' || finalGridSnapshot.length === 0;
+  if (!isManualMode && finalGridSnapshot.length > 0) {
+    const expectedLuas = finalGridSnapshot.length * GRID.CELL_SIZE_M2;
+    if (Math.abs(actualLuas - expectedLuas) > 0.001) {
+      throw new ValidationError(
+        `luas_m2 (${actualLuas}) tidak sesuai dengan jumlah sel terpilih (${finalGridSnapshot.length} sel × ${GRID.CELL_SIZE_M2} = ${expectedLuas} m2)`
+      );
+    }
+  }
+
+  // 4. Simpan lahan baru ke database
   const lahan = await prisma.lahan.create({
     data: {
       userId,
       namaLahan: nama_lahan.trim(),
       luasM2: actualLuas,
-      gridSnapshot: grid_snapshot,
+      gridSnapshot: finalGridSnapshot,
       paparanSinar: paparan_sinar,
       sumberPaparan: sumber_paparan,
       fotoUrl: foto_url || null,
@@ -178,21 +189,19 @@ export async function updateLahan(userId, lahanId, updateData) {
   }
 
   if (updateData.grid_snapshot !== undefined) {
-    validateGridSnapshot(updateData.grid_snapshot);
-    dataToUpdate.gridSnapshot = updateData.grid_snapshot;
-
-    const expectedLuas = updateData.grid_snapshot.length * GRID.CELL_SIZE_M2;
-    if (updateData.luas_m2 !== undefined) {
-      const actualLuas = Number(updateData.luas_m2);
-      if (Math.abs(actualLuas - expectedLuas) > 0.001) {
-        throw new ValidationError(
-          `luas_m2 (${actualLuas}) tidak sesuai dengan grid_snapshot (${expectedLuas} m2)`
-        );
-      }
-      dataToUpdate.luasM2 = actualLuas;
-    } else {
-      dataToUpdate.luasM2 = expectedLuas;
+    const grid = Array.isArray(updateData.grid_snapshot) ? updateData.grid_snapshot : [];
+    if (grid.length > 0) {
+      validateGridSnapshot(grid);
     }
+    dataToUpdate.gridSnapshot = grid;
+  }
+
+  if (updateData.luas_m2 !== undefined) {
+    const actualLuas = Number(updateData.luas_m2);
+    if (isNaN(actualLuas) || actualLuas < 0.25 || actualLuas > 1000) {
+      throw new ValidationError('luas_m2 harus bernilai antara 0.25 dan 1000 m2');
+    }
+    dataToUpdate.luasM2 = actualLuas;
   }
 
   const updated = await prisma.lahan.update({

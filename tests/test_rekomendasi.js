@@ -266,6 +266,36 @@ async function run() {
   );
   assert(resNotFoundRec.status === 404, 'Lahan tidak ada -> 404 NOT_FOUND');
 
+  // 7. Verifikasi filter luas lahan sempit (0.25 m2)
+  console.log('\n7. Testing filter luas minimum pada lahan 0.25 m2');
+  const createSmallLahan = await fetch(`${BASE_URL}/lahan`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${u1Token}`,
+    },
+    body: JSON.stringify({
+      nama_lahan: 'Lahan Mini',
+      grid_snapshot: [0], // 1 sel = 0.25 m2
+      luas_m2: 0.25,
+      paparan_sinar: 'FULL_SUN',
+      sumber_paparan: 'MANUAL',
+    }),
+  });
+  const smallLahanId = (await createSmallLahan.json()).data.lahan_id;
+
+  const resSmallRec = await fetch(`${BASE_URL}/lahan/${smallLahanId}/rekomendasi`, {
+    headers: { Authorization: `Bearer ${u1Token}` },
+  });
+  const dataSmallRec = await resSmallRec.json();
+  assert(resSmallRec.status === 200, 'GET rekomendasi lahan mini status 200');
+
+  // Tanaman dengan luas_min_m2 > 0.25 (misal Cabai rawit butuh 0.5m2)
+  const cabaiInSmall = dataSmallRec.data.rekomendasi.find(r => r.nama === 'Cabai rawit');
+  assert(cabaiInSmall !== undefined, 'Cabai rawit ditemukan di rekomendasi');
+  assert(cabaiInSmall.luas_cukup === false, 'luas_cukup adalah false untuk Cabai rawit di lahan 0.25 m2');
+  assert(cabaiInSmall.catatan_lahan !== null, 'catatan_lahan terisi peringatan luas lahan');
+
   console.log('\n----------------------------------------');
   console.log(`Summary: ${passed} passed, ${failed} failed`);
   console.log('----------------------------------------');

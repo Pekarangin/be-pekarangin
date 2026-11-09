@@ -109,6 +109,8 @@ export async function getRecommendationsForLahan(userId, lahanId) {
     ? latestPriceDate.toISOString().split('T')[0]
     : new Date().toISOString().split('T')[0];
 
+  const luasLahanM2 = Number(lahan.luasM2);
+
   // 3. Hitung skor untuk tiap komoditas
   const recommendations = allKomoditas.map((k) => {
     const latestHarga = k.hargaKomoditas[0];
@@ -122,14 +124,25 @@ export async function getRecommendationsForLahan(userId, lahanId) {
 
     // Faktor kesesuaian cahaya
     const sunlightFactor = getSunlightFactor(k.kebutuhanSinar, lahan.paparanSinar);
-    const kesesuaianSinar = mapKesesuaianLabel(sunlightFactor);
+    let kesesuaianSinar = mapKesesuaianLabel(sunlightFactor);
 
-    // Hitung skor prioritas
+    // Cek kesesuaian luas lahan
+    const luasCukup = luasLahanM2 >= luasMin;
+    let catatanLahan = null;
+    let faktorLuas = 1.0;
+
+    if (!luasCukup) {
+      faktorLuas = Math.max(0.2, luasLahanM2 / luasMin);
+      kesesuaianSinar = KESESUAIAN_SINAR.KURANG_COCOK;
+      catatanLahan = `Luas lahan (${luasLahanM2} m²) kurang dari batas minimal (${luasMin} m²)`;
+    }
+
+    // Hitung skor prioritas (dengan penalti luas jika lahan kurang memadai)
     const skorPrioritas = calculateScore({
       estimasiHematPerBulan: estimasiHematRpPerBulan,
       luasMinM2: luasMin,
       waktuPanenHari: waktuPanen,
-      sunlightFactor,
+      sunlightFactor: sunlightFactor * faktorLuas,
     });
 
     return {
@@ -139,6 +152,8 @@ export async function getRecommendationsForLahan(userId, lahanId) {
       estimasi_hemat_rp_per_bulan: estimasiHematRpPerBulan,
       waktu_panen_hari: waktuPanen,
       luas_dibutuhkan_m2: luasMin,
+      luas_cukup: luasCukup,
+      catatan_lahan: catatanLahan,
       tingkat_kesulitan: k.tingkatKesulitan,
       kesesuaian_sinar: kesesuaianSinar,
       harga_pasar_per_kg: hargaPasarPerKg,

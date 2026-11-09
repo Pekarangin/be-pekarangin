@@ -138,6 +138,7 @@ export async function getTanamanList({ userId, status, lahanId }) {
       catatanHarian: {
         orderBy: { tanggal: 'desc' },
       },
+      realisasiPanen: true,
     },
     orderBy: {
       tanggalTanam: 'desc',
@@ -156,6 +157,13 @@ export async function getTanamanList({ userId, status, lahanId }) {
     status: item.status,
     hari_ke: calculateHariKe(item.tanggalTanam),
     checklist_hari_ini: getChecklistHariIni(item.catatanHarian),
+    realisasi_panen: item.realisasiPanen ? {
+      realisasi_id: item.realisasiPanen.id,
+      tanggal_panen: formatDate(item.realisasiPanen.tanggalPanen),
+      berat_panen_gram: item.realisasiPanen.beratPanenGram,
+      berat_panen_kg: item.realisasiPanen.beratPanenGram / 1000,
+      estimasi_hemat_rp: item.realisasiPanen.estimasiHematRp,
+    } : null,
   }));
 }
 
@@ -170,6 +178,7 @@ export async function getTanamanDetail({ id, userId }) {
         select: { id: true, namaLahan: true },
       },
       komoditas: true,
+      realisasiPanen: true,
     },
   });
 
@@ -199,6 +208,13 @@ export async function getTanamanDetail({ id, userId }) {
     perkiraan_panen: formatDate(tanaman.perkiraanPanen),
     status: tanaman.status,
     hari_ke: calculateHariKe(tanaman.tanggalTanam),
+    realisasi_panen: tanaman.realisasiPanen ? {
+      realisasi_id: tanaman.realisasiPanen.id,
+      tanggal_panen: formatDate(tanaman.realisasiPanen.tanggalPanen),
+      berat_panen_gram: tanaman.realisasiPanen.beratPanenGram,
+      berat_panen_kg: tanaman.realisasiPanen.beratPanenGram / 1000,
+      estimasi_hemat_rp: tanaman.realisasiPanen.estimasiHematRp,
+    } : null,
   };
 }
 
