@@ -332,9 +332,9 @@ npm run test:ai            # 21 tests — Chatbot Pertanian, Konteks Tanaman, Sa
 
 ## 👥 Tim Pengembang (MAGE 12 ITS)
 
-* **Backend Engineer:** Andy Setiawan
-* **Frontend Mobile Engineer:** Davin
-* **AI & Data Engineer:** Aditya Pratama
+* **Backend Engineer:** Faris Andi Muhammad
+* **Frontend Mobile Engineer:** Aditya Pratama
+* **AI & Data Engineer:** Muhammad Davin Al Hisyam
 
 ---
 
