@@ -133,7 +133,7 @@ export async function getTanamanList({ userId, status, lahanId }) {
         select: { namaLahan: true },
       },
       komoditas: {
-        select: { nama: true, imageUrl: true },
+        select: { nama: true, imageUrl: true, luasMinM2: true },
       },
       catatanHarian: {
         orderBy: { tanggal: 'desc' },
@@ -155,6 +155,7 @@ export async function getTanamanList({ userId, status, lahanId }) {
     tanggal_tanam: formatDate(item.tanggalTanam),
     perkiraan_panen: formatDate(item.perkiraanPanen),
     status: item.status,
+    luas_dibutuhkan_m2: Number(item.komoditas?.luasMinM2 || 0.25),
     hari_ke: calculateHariKe(item.tanggalTanam),
     checklist_hari_ini: getChecklistHariIni(item.catatanHarian),
     realisasi_panen: item.realisasiPanen ? {
