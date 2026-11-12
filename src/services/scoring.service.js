@@ -70,9 +70,19 @@ export function calculateScore({
  * @param {string} lahanId - ID lahan yang akan dianalisis
  */
 export async function getRecommendationsForLahan(userId, lahanId) {
-  // 1. Ambil data lahan dan verifikasi kepemilikan
+  // 1. Ambil data lahan dan verifikasi kepemilikan beserta tanaman aktif untuk hitung kapasitas terpakai
   const lahan = await prisma.lahan.findUnique({
     where: { id: lahanId },
+    include: {
+      tanamanAktif: {
+        where: { status: 'AKTIF' },
+        include: {
+          komoditas: {
+            select: { luasMinM2: true },
+          },
+        },
+      },
+    },
   });
 
   if (!lahan) {
@@ -109,7 +119,12 @@ export async function getRecommendationsForLahan(userId, lahanId) {
     ? latestPriceDate.toISOString().split('T')[0]
     : new Date().toISOString().split('T')[0];
 
-  const luasLahanM2 = Number(lahan.luasM2);
+  const totalLuasLahanM2 = Number(lahan.luasM2);
+  const usedLuasM2 = (lahan.tanamanAktif || []).reduce(
+    (sum, t) => sum + Number(t.komoditas?.luasMinM2 || 0.25),
+    0
+  );
+  const sisaLuasLahanM2 = Math.max(0, Number((totalLuasLahanM2 - usedLuasM2).toFixed(2)));
 
   // 3. Hitung skor untuk tiap komoditas
   const recommendations = allKomoditas.map((k) => {
@@ -124,17 +139,19 @@ export async function getRecommendationsForLahan(userId, lahanId) {
 
     // Faktor kesesuaian cahaya
     const sunlightFactor = getSunlightFactor(k.kebutuhanSinar, lahan.paparanSinar);
-    let kesesuaianSinar = mapKesesuaianLabel(sunlightFactor);
+    const kesesuaianSinar = mapKesesuaianLabel(sunlightFactor);
 
-    // Cek kesesuaian luas lahan
-    const luasCukup = luasLahanM2 >= luasMin;
+    // Cek kesesuaian luas lahan berdasarkan sisa luas lahan riil yang belum terpakai tanaman aktif
+    const luasCukup = sisaLuasLahanM2 >= luasMin;
     let catatanLahan = null;
     let faktorLuas = 1.0;
 
     if (!luasCukup) {
-      faktorLuas = Math.max(0.2, luasLahanM2 / luasMin);
-      kesesuaianSinar = KESESUAIAN_SINAR.KURANG_COCOK;
-      catatanLahan = `Luas lahan (${luasLahanM2} m²) kurang dari batas minimal (${luasMin} m²)`;
+      faktorLuas = sisaLuasLahanM2 > 0 ? Math.max(0.2, sisaLuasLahanM2 / luasMin) : 0.1;
+      catatanLahan =
+        sisaLuasLahanM2 > 0
+          ? `Sisa lahan (${sisaLuasLahanM2} m²) kurang dari kebutuhan (${luasMin} m²)`
+          : `Lahan penuh (${usedLuasM2.toFixed(2)} / ${totalLuasLahanM2} m² terpakai)`;
     }
 
     // Hitung skor prioritas (dengan penalti luas jika lahan kurang memadai)
@@ -155,6 +172,7 @@ export async function getRecommendationsForLahan(userId, lahanId) {
       luas_cukup: luasCukup,
       catatan_lahan: catatanLahan,
       tingkat_kesulitan: k.tingkatKesulitan,
+      kebutuhan_sinar: k.kebutuhanSinar,
       kesesuaian_sinar: kesesuaianSinar,
       harga_pasar_per_kg: hargaPasarPerKg,
       konsumsi_rt_kg_per_bulan: konsumsiRt,
@@ -166,13 +184,33 @@ export async function getRecommendationsForLahan(userId, lahanId) {
     };
   });
 
-  // 4. Urutkan dari skor prioritas tertinggi ke terendah (descending)
-  recommendations.sort((a, b) => b.skor_prioritas - a.skor_prioritas);
+  // 4. Urutkan berdasarkan kesesuaian kondisi riil lahan:
+  // Prioritas 1: Sinar Cocok & Luas Cukup (muat di lahan fisik pekarangan)
+  // Prioritas 2: Sinar Kurang Cocok & Luas Cukup
+  // Prioritas 3: Luas Lahan Kurang (butuh lahan lebih luas)
+  // Prioritas 4: Sinar Tidak Cocok
+  const getSuitabilityRank = (item) => {
+    const isLuasMuat = totalLuasLahanM2 >= item.luas_dibutuhkan_m2;
+    if (item.kesesuaian_sinar === 'COCOK' && isLuasMuat) return 4;
+    if (item.kesesuaian_sinar === 'KURANG_COCOK' && isLuasMuat) return 3;
+    if (isLuasMuat) return 2;
+    if (item.kesesuaian_sinar !== 'TIDAK_COCOK') return 1;
+    return 0;
+  };
+
+  recommendations.sort((a, b) => {
+    const rankDiff = getSuitabilityRank(b) - getSuitabilityRank(a);
+    if (rankDiff !== 0) return rankDiff;
+    return b.skor_prioritas - a.skor_prioritas;
+  });
 
   return {
     lahan_id: lahan.id,
     lahan_nama: lahan.namaLahan,
-    lahan_luas_m2: Number(lahan.luasM2),
+    lahan_luas_m2: totalLuasLahanM2,
+    lahan_terpakai_m2: Number(usedLuasM2.toFixed(2)),
+    lahan_sisa_m2: sisaLuasLahanM2,
+    jumlah_tanaman_aktif: (lahan.tanamanAktif || []).length,
     lahan_paparan_sinar: lahan.paparanSinar,
     harga_update_terakhir: formattedPriceDate,
     rekomendasi: recommendations,
